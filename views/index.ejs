@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>URL Shortener</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>URL Shortener</h1>
+        <form id="urlForm">
+            <input type="url" id="longUrl" placeholder="Enter your URL here" required>
+            <button type="submit">Shorten URL</button>
+        </form>
+        <div id="result"></div>
+    </div>
+    
+    <script>
+        document.getElementById('urlForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const longUrl = document.getElementById('longUrl').value;
+            
+            try {
+                const response = await fetch('/url/short', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ longUrl })
+                });
+                
+                const data = await response.json();
+                document.getElementById('result').innerHTML = `
+                    <div class="result-container">
+                        <p>Shortened URL: 
+                            <a href="${data.shortUrl}" target="_blank">${data.shortUrl}</a>
+                            <button onclick="copyToClipboard('${data.shortUrl}')" class="copy-button">
+                                Copy
+                            </button>
+                        </p>
+                        <div id="copyMessage" class="copy-message"></div>
+                    </div>
+                `;
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        });
+
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                const messageElement = document.getElementById('copyMessage');
+                messageElement.textContent = 'URL copied!';
+                messageElement.style.opacity = '1';
+                
+                setTimeout(() => {
+                    messageElement.style.opacity = '0';
+                }, 2000);
+            }).catch(err => {
+                console.error('Copy error:', err);
+            });
+        }
+    </script>
+</body>
+</html>
